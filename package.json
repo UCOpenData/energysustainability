@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "type":"module",
     "d3": "^7.6.1",
     "topojson": "^3.0.2"
   }

@@ -4,63 +4,119 @@
 //https://observablehq.com/@d3/u-s-map
 //https://observablehq.com/@d3/bubble-map
 //document.createElement(map);
-  
   //{
   // header
-  import * as d3 from "d3"
+//const d = require(d3);
+import * as d3 from 'https://cdn.skypack.dev/d3@7';
+import * as topojson from "https://cdn.skypack.dev/topojson";
 
 
-  chicago = FileAttachment("files/Boundaries - Neighborhoods.geojson").json()
-  chimesh = topojson.mesh(chicago, chicago.properties.pri_neigh, (a, b) => a !== b)
-  data = (await ("files/2018_data.csv").csv()).map(d => d["Chicago Energy Rating"])
+  // 
+  /*var svg = d3.select("svg"),
+      width = +svg.attr("width"),
+      height = +svg.attr("height");
+
+  var path = d3.geoPath();*/
+
+  /* ---- FETCH DATA, data processing functions ----- */
+  const chi = fetch("files/chineighborhoods.json")
+    .then(response => response.json())
+    .then(data => {console.log(data); return data; console.log("Success");})
+
+  const engdata = fetch("files/2018_data.json")
+  .then(response => response.json())
+  .then(data => {console.log(data); return data; console.log("Success");})
+
+  const chicago = async () => {
+    const a = await chi;
+    return a;
+  };
+
+  const endat = async () => {
+    const a = await engdata;
+    return a;
+  };
+
+  const chimesh = async () => {
+    const c = await chicago();
+    console.log(c);
+    //var feature = topojson.feature(c, "features");
+    //console.log(feature);
+    // huge thanks to https://github.com/RandomFractals/ChicagoCrimes/blob/master/data/chicago-community-areas.topojson for this json!
+    const ans = topojson.mesh(c, c.objects.chicagocommunityareas, (a, b) => a !== b); // need to rearrange the json file
+    console.log(ans); return ans;
+  };
+  //data = (await ("files/2018_data.csv").csv()).map(d => d["Chicago Energy Rating"])
+  console.log(await chimesh());
 
 
-chart = Choropleth(data, {
-    id: d => d.id, // given d in data, returns the feature id
-    value: d => d.Chicago_Energy_Rating, // given d in data, returns the quantitative value
-    //title, // given a feature f and possibly a datum d, returns the hover text
-    //format, // optional format specifier for the title
-    scale: d3.scaleQuantize, // type of color scale
-    domain: [1,10], // [min, max] values; input of color scale
-    range: d3.schemeBlues[9], // output of color scale
-    width: 975, // outer width, in pixels
-    height: 610, // outer height, in pixels
-    //projection, // a D3 projection; null for pre-projected geometry
-    //features, // a GeoJSON feature collection
-    //featureId = d => d.id, // given a feature, returns its id
-    borders: chimesh, // a GeoJSON object for stroking borders
-    //outline = projection && projection.rotate ? {type: "Sphere"} : null, // a GeoJSON object for the background
-    //unknown = "#ccc", // fill color for missing data
-    //fill = "white", // fill color for outline
-    //stroke = "white", // stroke color for borders
-    //strokeLinecap = "round", // stroke line cap for borders
-    //strokeLinejoin = "round", // stroke line join for borders
-    //strokeWidth, // stroke width for borders
-    //strokeOpacity, // stroke opacity for borders
-  })
+  /* ---- Actual Map Implementation ----- */
+  var end = endat();
+  //chim = chimesh();
+  var chart = BubbleMap(await end, {
+    value: (data) => parseInt(data.Chicago_Energy_Rating),
+    position(data) {
+      //console.log(data.Latitude);
+      return [parseInt(data.Latitude), parseInt(data.Longitude)];
+    },
+    title(data) {
+      return data.Property_Name;
+    },
+    features: chi,
+    border: chimesh(),
+    width: 700,
+    height: 500
+  });
 
+  document.getElementById("map").appendChild(chart);
+
+
+
+/* ---- Bubble Map Function ----- */
+// Copyright 2022 Observable, Inc.
+// Released under the ISC license.
+// https://observablehq.com/@d3/bubble-map
+function BubbleMap(data, {
+  position = d => d, // given d in data, returns the [longitude, latitude]
+  value = () => undefined, // given d in data, returns the quantitative value
+  title, // given a datum d, returns the hover text
+  scale = d3.scaleSqrt, // type of radius scale
+  domain, // [0, max] values; input of radius scale; must start at zero
+  maxRadius = 20, // maximum radius of bubbles
+  width = 640, // outer width, in pixels
+  height, // outer height, in pixels
+  projection = d3.geoMercator()
+  .scale(width * 90)
+  .center([-87.6298, 41.8781])
+  .translate([width / 2, height / 2]), // a D3 projection; null for pre-projected geometry
+  features, // a GeoJSON feature collection for the background
+  borders, // a GeoJSON object for stroking borders
+  outline = projection && projection.rotate ? {type: "Sphere"} : null, // a GeoJSON object for the background
+  backgroundFill = "#e0e0e0", // fill color for background
+  backgroundStroke = "black", // stroke color for borders
+  backgroundStrokeWidth, // stroke width for borders
+  backgroundStrokeOpacity, // stroke width for borders
+  backgroundStrokeLinecap = "round", // stroke line cap for borders
+  backgroundStrokeLinejoin = "round", // stroke line join for borders
+  fill = "blue", // fill color for bubbles
+  fillOpacity = 1, // fill opacity for bubbles
+  stroke = "white", // stroke color for bubbles
+  strokeWidth = 1, // stroke width for bubbles
+  strokeOpacity, // stroke opacity for bubbles
+  legendX = width - maxRadius - 10,
+  legendY = height - 10,
+} = {}) {
   // Compute values.
-  const N = d3.map(data, id);
+  const I = d3.map(data, (_, i) => i);
   const V = d3.map(data, value).map(d => d == null ? NaN : +d);
-  const Im = new d3.InternMap(N.map((id, i) => [id, i]));
-  const If = d3.map(features.features, featureId);
+  const P = d3.map(data, position);
+  const T = title == null ? null : d3.map(data, title);
 
   // Compute default domains.
-  if (domain === undefined) domain = d3.extent(V);
+  if (domain === undefined) domain = [0, d3.max(V)];
 
   // Construct scales.
-  const color = scale(domain, range);
-  if (color.unknown && unknown !== undefined) color.unknown(unknown);
-
-  // Compute titles.
-  if (title === undefined) {
-    format = color.tickFormat(100, format);
-    title = (f, i) => `${f.properties.name}\n${format(V[i])}`;
-  } else if (title !== null) {
-    const T = title;
-    const O = d3.map(data, d => d);
-    title = (f, i) => T(f, O[i]);
-  }
+  const radius = scale(domain, [0, maxRadius]);
 
   // Compute the default height. If an outline object is specified, scale the projection to fit
   // the width, and then compute the corresponding height.
@@ -75,28 +131,71 @@ chart = Choropleth(data, {
     }
   }
 
+  // Construct a path generator.
   const path = d3.geoPath(projection);
 
   const svg = d3.create("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("style", "width: 100%; height: auto; height: intrinsic;");
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", [0, 0, width, height])
+      .attr("style", "width: 100%; height: auto; height: intrinsic;");
 
-    if (outline != null) svg.append("path")
-    .attr("fill", fill)
-    .attr("stroke", "currentColor")
-    .attr("d", path(outline));
+  if (outline != null) svg.append("path")
+      .attr("fill", "white")
+      .attr("stroke", "currentColor")
+      .attr("d", path(outline));
 
-    if (borders != null) svg.append("path")
-    .attr("pointer-events", "none")
-    .attr("fill", "none")
-    .attr("stroke", stroke)
-    .attr("stroke-linecap", strokeLinecap)
-    .attr("stroke-linejoin", strokeLinejoin)
-    .attr("stroke-width", strokeWidth)
-    .attr("stroke-opacity", strokeOpacity)
-    .attr("d", path(borders));
+  svg.append("path")
+      .datum(features)
+      .attr("fill", backgroundFill)
+      .attr("d", path);
 
-    return Object.assign(svg.node(), {scales: {color}});
-//}
+  if (borders != null) svg.append("path")
+      .attr("pointer-events", "none")
+      .attr("fill", "none")
+      .attr("stroke", backgroundStroke)
+      .attr("stroke-linecap", backgroundStrokeLinecap)
+      .attr("stroke-linejoin", backgroundStrokeLinejoin)
+      .attr("stroke-width", backgroundStrokeWidth)
+      .attr("stroke-opacity", backgroundStrokeOpacity)
+      .attr("d", path(borders));
+
+  const legend = svg.append("g")
+      .attr("fill", "#777")
+      .attr("transform", `translate(${legendX}-141785,${legendY}-280526)`)
+      .attr("text-anchor", "middle")
+      .style("font", "10px sans-serif")
+    .selectAll("g")
+      .data(radius.ticks(4).slice(1))
+    .join("g");
+
+  legend.append("circle")
+      .attr("fill", "none")
+      .attr("stroke", "#ccc")
+      .attr("cy", d => -radius(d))
+      .attr("r", radius);
+
+  legend.append("text")
+      .attr("y", d => -2 * radius(d))
+      .attr("dy", "1.3em")
+      .text(radius.tickFormat(4, "s"));
+
+  svg.append("g")
+      .attr("fill", fill)
+      .attr("fill-opacity", fillOpacity)
+      .attr("stroke", stroke)
+      .attr("stroke-width", strokeWidth)
+      .attr("stroke-opacity", strokeOpacity)
+    .selectAll("circle")
+    .data(d3.range(data.length)
+        .filter(i => P[i])
+        .sort((i, j) => d3.descending(V[i], V[j])))
+    .join("circle")
+      .attr("transform", projection == null
+          ? i => `translate(${P[i]})`
+          : i => `translate(${projection(P[i])})`)
+      .attr("r", i => radius(V[i]))
+      .call(T ? circle => circle.append("title").text(i => T[i]) : () => {});
+
+  return Object.assign(svg.node(), {scales: {radius}});
+};

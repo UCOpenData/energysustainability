@@ -2,7 +2,7 @@
 <html>
     <head>
         <div id="topcon">
-            <img id="logo" src="files/uclogo"> <!-- must create logo-->
+            <img id="logo" src="files/uclogo.png" width=100 height="100">
             <link rel="stylesheet" href="main.css">
             <h1>
                 UC Open Data - Energy Usage in Hyde Park
@@ -14,20 +14,24 @@
         <p id="desc">
             The following graph displays the energy usage of buildings in the Hyde Park area.
         </p>
-        <div id="mapcon" width=80% height=90%>
-            <script src="map.JS"></script>
-            <br>
-            <canvas id="mapren"></canvas>
-            <br>
-        </div>
+        <div id="mapcon">
+            <!-- Load in d3 files -->
+            <!--<script src="https://d3js.org/d3.v4.js"></script>
+            <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script> 
+            <script src="https://d3js.org/d3.v5.min.js"></script> -->
+
+            <!-- Create Map SVG -->
+            <svg id="map" width=500 height=500></svg>
+            <script type="module" src="map.JS"></script>
+        </div> 
 
         <div class="botcon">
-            <p id="bothp">
+            <a id="bothp" href="https://ucopendata.netlify.app/#/">
                 Homepage
-            </p>
-            <p id="botsource" href="addurlforsource"> <!-- find url src -->
+            </a>
+            <a id="botsource" href="http://127.0.0.1:5500/files/">
                 Source
-            </p>
+            </a>
             <br>
         </div>
     </body>
