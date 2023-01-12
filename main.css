@@ -17,7 +17,7 @@ h1 {
 }
 
 #svg {
-    margin-left:auto;
+    margin-left:100%;
     margin-right:auto;
     z-index: -1;
     position: relative;

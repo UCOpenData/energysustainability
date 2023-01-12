@@ -64,7 +64,7 @@ import * as topojson from "https://cdn.skypack.dev/topojson";
     },
     features: chi,
     border: chimesh(),
-    width: 700,
+    width: 500,
     height: 500
   });
 
@@ -87,7 +87,7 @@ function BubbleMap(data, {
   height, // outer height, in pixels
   projection = d3.geoMercator()
   .scale(width * 90)
-  .center([-87.6298, 41.8781])
+  .center([-87.6231, 41.8818]) // this is flipped from data
   .translate([width / 2, height / 2]), // a D3 projection; null for pre-projected geometry
   features, // a GeoJSON feature collection for the background
   borders, // a GeoJSON object for stroking borders
@@ -128,10 +128,13 @@ function BubbleMap(data, {
       const dy = Math.ceil(y1 - y0), l = Math.min(Math.ceil(x1 - x0), dy);
       projection.scale(projection.scale() * (l - 1) / l).precision(0.2);
       height = dy;
+      console.log(height);
     }
   }
 
   // Construct a path generator.
+  console.log("proj")
+  console.log(projection)
   const path = d3.geoPath(projection);
 
   const svg = d3.create("svg")
@@ -160,9 +163,11 @@ function BubbleMap(data, {
       .attr("stroke-opacity", backgroundStrokeOpacity)
       .attr("d", path(borders));
 
+  const lx = legendX;
+  const ly = legendY;
   const legend = svg.append("g")
       .attr("fill", "#777")
-      .attr("transform", `translate(${legendX}-141785,${legendY}-280526)`)
+      .attr("transform", `translate(${lx},${ly})`)
       .attr("text-anchor", "middle")
       .style("font", "10px sans-serif")
     .selectAll("g")
@@ -196,6 +201,9 @@ function BubbleMap(data, {
           : i => `translate(${projection(P[i])})`)
       .attr("r", i => radius(V[i]))
       .call(T ? circle => circle.append("title").text(i => T[i]) : () => {});
+
+    console.log(P)
+    console.log(projection(P[3]))
 
   return Object.assign(svg.node(), {scales: {radius}});
 };
