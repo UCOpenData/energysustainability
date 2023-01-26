@@ -4,8 +4,8 @@
 // opacity - calculated from energy efficiency
 // svg - given svg structure
 // cx, cy - x,y coordinates (already adjusted)
-// radius - circle radius (should be constant)
-function drawCircle(opacity, svg, cx, cy, radius) {
+const radius = 10
+function drawCircle(opacity, svg, cx, cy) {
     svg.append("circle")
         .attr("cx", cx)
         .attr("cy", cy)
@@ -21,7 +21,9 @@ function adjustCoordinate(latitude, longitude, xscale, yscale, xorigin, yorigin)
     var y_svg_coord = longitude-centerLong;
     return [x_svg_coord*xscale + xorigin, y_svg_coord*yscale + yorigin];
 }
-
+//<script src="./files/testdata.json"></script>
+//const chi_data = JSON.parse("/files/testdata.json");
+//console.log(chi_data);
 
 var svg = d3.select("body")
   .append("svg")
@@ -37,9 +39,12 @@ var height = 500;
 d3.json("files/Boundaries - Neighborhoods.geojson", function(err, geojson) { 
 
       projection.fitSize([width,height],geojson); // adjust the projection to the features
-      svg.append("path").attr("d", path(geojson)); // draw the features
+      svg.append("path")
+      .attr("d", path(geojson))
+      .style("opacity", .75); // draw the features
 
 })
+
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
