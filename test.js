@@ -7,13 +7,29 @@ function drawCircle(opacity, svg, cx, cy, radius) {
         .style("opacity", opacity)
 }
 
+var width = 900;
+var height = 500;
 
+var svg = d3.select("body")
+  .append("svg")
+  .attr("width",width)  // apply width,height to svg
+  .attr("height",height);
+
+var projection = d3.geoMercator();
+var path = d3.geoPath().projection(projection);
+
+d3.json("files/Boundaries - Neighborhoods.geojson", function(err, geojson) { 
+
+      projection.fitSize([width,height],geojson); // adjust the projection to the features
+      svg.append("path").attr("d", path(geojson)); // draw the features
+
+})
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
 
-var projection = d3.geoMercator()
-    /*.scale((width-4) / (Math.PI / 5))
+/*var projection = d3.geoMercator()
+    .scale((width-4) / (Math.PI / 5))
     .translate([width / 2, height / 2])*/
     //.center([-87.554420,41.739685]);
 
@@ -21,6 +37,7 @@ var path = d3.geoPath()
     .projection(projection);
 
 var graticule = d3.geoGraticule();
+
 
 /*svg.append("defs").append("path")
     .datum({type: "Sphere"})
