@@ -1,10 +1,26 @@
 /* Map Projections */
 
+// returns center [width, height] of the svg
+function getCenter(svg) {
+    // take coordinates of svg - dependent on height!
+    var bbox = svg.getBBox();
+    var height = bbox.height;
+    var width = 0.81886*height;
+
+    // calculate outut coordinates, based off of above vals
+    // height is .372height from top
+    // width is 313/409.43width from right (.764)
+    console.log(width*.746);
+    console.log(height*.372);
+
+    return [width*.746, height*.372]
+}
+
 // this function takes a number of input parameters and draws a circle with them
 // opacity - calculated from energy efficiency
 // svg - given svg structure
 // cx, cy - x,y coordinates (already adjusted)
-const radius = 10
+const radius = 2;
 function drawCircle(opacity, svg, cx, cy) {
     svg.append("circle")
         .attr("cx", cx)
@@ -33,16 +49,20 @@ var svg = d3.select("body")
 var projection = d3.geoMercator();
 var path = d3.geoPath().projection(projection);
 
-var width = 900;
+var width = 1000;
 var height = 500;
+//document.getElementById("svg").setAttribute("width", width);
+//document.getElementById("svg").setAttribute("height", height);
+
 
 d3.json("files/Boundaries - Neighborhoods.geojson", function(err, geojson) { 
 
       projection.fitSize([width,height],geojson); // adjust the projection to the features
       svg.append("path")
       .attr("d", path(geojson))
-      .style("opacity", .75); // draw the features
+      .style("opacity", .60); // draw the features
 
+    
 })
 
 var svg = d3.select("svg"),
@@ -50,7 +70,7 @@ var svg = d3.select("svg"),
     height = +svg.attr("height");
 
 
-var path = d3.geoPath()
+/*var path = d3.geoPath()
     .projection(projection);
 
 var graticule = d3.geoGraticule();
@@ -58,9 +78,15 @@ var graticule = d3.geoGraticule();
 svg.append("path")
     .datum(graticule)
     .attr("class", "graticule")
-    .attr("d", path);
+    .attr("d", path);*/
 
 
-var testAdjust = adjustCoordinate(41.881832,-87.623177, 1, 1, 500, 100);
+// path's x,y axis is as follows:
+// y is whatever we set it to
+// x is 0.81886y
+// x origin is 313 at current scale; y origin is 186
+// current scale is 500 height (490.43 width)
+var testAdjust = adjustCoordinate(41.881832,-87.623177, 1, 1, 313, 186);
+var test = getCenter(document.getElementById("svg"));
 
 drawCircle(.5, svg, testAdjust[0], testAdjust[1], 20);
