@@ -68,7 +68,9 @@ d3.json("files/Boundaries - Neighborhoods.geojson", function(err, geojson) {
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
-
+svg.call(d3.zoom().on("zoom", function () {
+    svg.attr("transform", d3.zoomTransform(this))
+    }));
 
 /*var path = d3.geoPath()
     .projection(projection);
