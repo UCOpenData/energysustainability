@@ -1,19 +1,19 @@
 /* Map Projections */
 
 // returns center [width, height] of the svg
-function getCenter(svg) {
+function getCenter(height) {
     // take coordinates of svg - dependent on height!
-    var bbox = svg.getBBox();
-    var height = bbox.height;
+    /*var bbox = svg.getBBox();
+    var height = bbox.height;*/
     var width = 0.81886*height;
 
     // calculate outut coordinates, based off of above vals
     // height is .372height from top
     // width is 313/409.43width from right (.764)
-    console.log(width*.746);
+    console.log(width*.764);
     console.log(height*.372);
 
-    return [width*.746, height*.372]
+    return [width*.764, height*.372]
 }
 
 // this function takes a number of input parameters and draws a circle with them
@@ -49,8 +49,8 @@ var svg = d3.select("body")
 var projection = d3.geoMercator();
 var path = d3.geoPath().projection(projection);
 
-var width = 1000;
-var height = 500;
+//var width = 1000;
+//var height = 500;
 //document.getElementById("svg").setAttribute("width", width);
 //document.getElementById("svg").setAttribute("height", height);
 
@@ -88,7 +88,8 @@ svg.append("path")
 // x is 0.81886y
 // x origin is 313 at current scale; y origin is 186
 // current scale is 500 height (490.43 width)
-var testAdjust = adjustCoordinate(41.881832,-87.623177, 1, 1, 313, 186);
-var test = getCenter(document.getElementById("svg"));
 
-drawCircle(.5, svg, testAdjust[0], testAdjust[1], 20);
+var test = getCenter(svg.attr("height")); // outputs [x,y] values
+var testAdjust = adjustCoordinate(41.881832,-87.623177, 1, 1, test[0], test[1]);
+
+drawCircle(.5, svg, testAdjust[0], testAdjust[1]);
