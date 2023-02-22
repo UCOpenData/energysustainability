@@ -84,7 +84,14 @@ svg.call(d3.zoom().on("zoom", function () {
 // center of chicago found somewhere - pull from existing
 // tip of navy pier 41.891772596739635, -87.59896657803193
 // x,y scales are ~2300, -510 respectively
-
+for (var i = 0; i < data.length; i++){
+    var obj = data[i]
+    var adjusted = adjustCoordinate(obj["Latitude"], obj["Longitude"],500,850,test[0],test[1])
+    drawCircle(.5, svg, adjusted[0], adjusted[1])
+    /*for (var key in obj){
+        var value = obj[key]
+    }*/
+}
 var test = getCenter(svg.attr("height")); // outputs [x,y] values
 var testAdjust = adjustCoordinate(41.881832,-87.623177, 1, 1, test[0], test[1]);
 var testAdjust2 = adjustCoordinate(41.891772596739635,-87.59896657803193, 2300, -510, test[0], test[1]);
