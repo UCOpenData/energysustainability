@@ -1,5 +1,8 @@
 /* Map Projections */
 
+import { data } from './files/data.js'
+console.log(data);
+
 // returns center [width, height] of the svg
 function getCenter(height) {
     // take coordinates of svg - dependent on height!
